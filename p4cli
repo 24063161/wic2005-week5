@@ -1,0 +1,11 @@
+#!/bin/sh
+# Send one command to a switch's runtime CLI.   Usage: ./p4cli s1 table_dump MyIngress.ipv4_lpm
+# Quote commands containing "=>", or the shell treats ">" as a redirect:
+#   ./p4cli s2 "table_add MyIngress.ipv4_lpm MyIngress.ipv4_forward 10.0.0.3/32 => 3"
+case "$1" in
+  s1) port=9090 ;;
+  s2) port=9091 ;;
+  *) echo "usage: ./p4cli s1|s2 <command>"; exit 1 ;;
+esac
+shift
+echo "$*" | simple_switch_CLI --thrift-port "$port" 2>/dev/null | sed -e '/^Obtaining JSON/d' -e '/^Control utility/d' -e 's/^RuntimeCmd: //' -e '/^$/d'

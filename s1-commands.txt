@@ -1,0 +1,8 @@
+# s1: h1 is on port 1; everything else is through s2, on port 2.
+# topo.py replaces NN with the last 2 digits of your student ID when it loads this file.
+table_add MyIngress.ipv4_lpm MyIngress.ipv4_forward 10.NN.0.1/32 => 1
+table_add MyIngress.ipv4_lpm MyIngress.ipv4_forward 10.NN.0.2/32 => 2
+table_add MyIngress.ipv4_lpm MyIngress.ipv4_forward 10.NN.0.3/32 => 2
+table_add MyIngress.myTunnel_exact MyIngress.myTunnel_forward 1 => 1
+table_add MyIngress.myTunnel_exact MyIngress.myTunnel_forward 2 => 2
+table_add MyIngress.myTunnel_exact MyIngress.myTunnel_forward 3 => 2

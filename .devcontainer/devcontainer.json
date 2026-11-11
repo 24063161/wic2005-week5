@@ -1,0 +1,22 @@
+{
+  "name": "Week 5 P4 lab",
+  // Built and published by .github/workflows/image.yml.
+  "image": "ghcr.io/firdaussahran/p4-lab:1.0",
+  // Mininet and BMv2 create network namespaces and virtual links: that needs a privileged container.
+  "privileged": true,
+  "remoteUser": "root",
+  "hostRequirements": { "cpus": 2 },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.associations": { "*.p4": "c" },
+        // *.p4 is coloured as C, but it isn't C: stop the C/C++ extension checking it, or it reports
+        // P4's own headers (core.p4, v1model.p4) as missing. p4c, run by topo.py, is the real check.
+        "C_Cpp.intelliSenseEngine": "disabled"
+      }
+    },
+    "codespaces": {
+      "openFiles": ["README.md", "tunnel.p4"]
+    }
+  }
+}

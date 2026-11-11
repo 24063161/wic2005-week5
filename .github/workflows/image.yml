@@ -1,0 +1,53 @@
+name: Build the lab image
+
+# Builds .devcontainer/Dockerfile on GitHub's x86 machines and publishes it to GitHub's container
+# registry as ghcr.io/<owner>/p4-lab:<VERSION>, the image .devcontainer/devcontainer.json uses.
+# Published from a public repository, the image is public too: Codespaces (and anyone) can pull it
+# without logging in.
+#
+# It runs when the Dockerfile or this file changes on main, or by hand (Actions → Run workflow).
+# To change the environment: edit the Dockerfile, bump VERSION here and the tag in
+# devcontainer.json together, push, and test a fresh codespace before telling students.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".devcontainer/Dockerfile"
+      - ".github/workflows/image.yml"
+  workflow_dispatch:
+
+env:
+  VERSION: "1.0"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    # Copies of this repository made with "Use this template" have no need to build it.
+    if: github.repository == 'firdaussahran/p4-lab'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub's container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .devcontainer
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/p4-lab:${{ env.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/p4-lab:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.description=Week 5 P4 lab: p4c, BMv2 and Mininet
