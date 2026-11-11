@@ -1,0 +1,78 @@
+mininet> h1 python3 send.py 10.61.0.2 "to h2" --tunnel 2
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 2
+     hop_limit = 64
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 33
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x664f
+        src       = 10.61.0.1
+        dst       = 10.61.0.2
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 13
+           chksum    = 0x2be
+###[ Raw ]### 
+              load      = 'to h2'
+
+Sent from h1-eth0.
+mininet> h1 python3 send.py 10.61.0.3 "to h3" --tunnel 3
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 3
+     hop_limit = 64
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 33
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x664e
+        src       = 10.61.0.1
+        dst       = 10.61.0.3
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 13
+           chksum    = 0x1bd
+###[ Raw ]### 
+              load      = 'to h3'
+
+Sent from h1-eth0.
+mininet> h1 ping -c 2 h3
+PING 10.61.0.3 (10.61.0.3) 56(84) bytes of data.
+64 bytes from 10.61.0.3: icmp_seq=1 ttl=62 time=48.3 ms
+64 bytes from 10.61.0.3: icmp_seq=2 ttl=62 time=51.7 ms
+
+--- 10.61.0.3 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1000ms
+rtt min/avg/max/mdev = 48.288/49.994/51.700/1.706 ms
+mininet> sh cat logs/h2.txt
+Listening on h2-eth0...
+Received (tunnelled, dst_id=2, hop_limit=62) from 10.61.0.1 to 10.61.0.2, TTL 64: 'to h2'
+mininet> sh cat logs/h3.txt
+Listening on h3-eth0...
+Received (tunnelled, dst_id=3, hop_limit=62) from 10.61.0.1 to 10.61.0.3, TTL 64: 'to h3'

@@ -1,0 +1,85 @@
+mininet> h2 timeout 8 tcpdump -c 1 -XX -ni h2-eth0 ether proto 0x1212 > logs/h2cap.txt 2>&1 &
+mininet> h1 python3 send.py 10.61.0.3 "mixed" --tunnel 2
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 2
+     hop_limit = 64
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 33
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x664e
+        src       = 10.61.0.1
+        dst       = 10.61.0.3
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 13
+           chksum    = 0x7fc5
+###[ Raw ]### 
+              load      = 'mixed'
+
+Sent from h1-eth0.
+mininet> sh sleep 8; cat logs/h2cap.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on h2-eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+19:44:13.246075 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype Unknown (0x1212), length 52: 
+	0x0000:  ffff ffff ffff 0000 0000 0001 1212 0800  ................
+	0x0010:  0002 3f45 0000 2100 0100 0040 d565 4e0a  ..?E..!....@.eN.
+	0x0020:  3d00 010a 3d00 0310 e110 e100 0d7f c56d  =...=..........m
+	0x0030:  6978 6564                                ixed
+1 packet captured
+1 packet received by filter
+0 packets dropped by kernel
+mininet> sh ./p4cli s2 "table_modify MyIngress.myTunnel_exact MyIngress.myTunnel_forward 2 1"
+Done
+Modifying entry 2 for exact match table MyIngress.myTunnel_exact
+mininet> h1 python3 send.py 10.61.0.3 "mixed loop" --tunnel 3
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 3
+     hop_limit = 64
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 38
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x6649
+        src       = 10.61.0.1
+        dst       = 10.61.0.3
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 18
+           chksum    = 0xa3bb
+###[ Raw ]### 
+              load      = 'mixed loop'
+
+Sent from h1-eth0.
+mininet> sh grep -c "Processing packet received" logs/s1.txt logs/s2.txt
+logs/s1.txt:4
+logs/s2.txt:3
+mininet> sh sleep 5; grep -c "Processing packet received" logs/s1.txt logs/s2.txt
+logs/s1.txt:67
+logs/s2.txt:65
