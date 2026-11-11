@@ -1,0 +1,41 @@
+mininet> sh ./p4cli s2 "table_modify MyIngress.myTunnel_exact MyIngress.myTunnel_forward 2 1"
+Done
+Modifying entry 2 for exact match table MyIngress.myTunnel_exact
+mininet> h1 python3 send.py 10.61.0.3 "loop" --tunnel 3
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 3
+     hop_limit = 64
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 32
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x664f
+        src       = 10.61.0.1
+        dst       = 10.61.0.3
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 12
+           chksum    = 0xedb6
+###[ Raw ]### 
+              load      = 'loop'
+
+Sent from h1-eth0.
+mininet> sh grep -c "Processing packet received" logs/s1.txt logs/s2.txt
+logs/s1.txt:2
+logs/s2.txt:2
+mininet> sh sleep 5; grep -c "Processing packet received" logs/s1.txt logs/s2.txt
+logs/s1.txt:33
+logs/s2.txt:32
